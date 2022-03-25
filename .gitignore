@@ -2,3 +2,4 @@
 *.duckdb*
 *.csv
 __pycache__
+*.ipynb

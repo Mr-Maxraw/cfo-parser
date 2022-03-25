@@ -1,3 +1,4 @@
 *.xls*
 *.duckdb*
 *.csv
+__pycache__

@@ -17,6 +17,9 @@
 # y, x = z
 # print(f'z is: {z[0]}, {z[1]}')
 # print(x, y)
-a = [1, 1, 2, [1,1]]
-b = set(a)
-print(b)
+# a = [1, 1, 2, [1,1]]
+# b = set(a)
+# print(b)
+a = [1, 2]
+b = [3, 4]
+print(a+b[:1])

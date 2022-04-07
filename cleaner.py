@@ -3,7 +3,7 @@ from fuzzywuzzy import process, fuzz
 import time
 
 path_to_docs = 'C:/Users/PetukhovMD/Desktop/справочники/'
-path_to_data = 'C:/Users/PetukhovMD/Desktop/февраль/'
+path_to_data = 'C:/Users/PetukhovMD/Desktop/2022/март/'
 
 wb = load_workbook(path_to_docs + 'input.xlsx')
 groups = {}
@@ -75,12 +75,15 @@ def calc():
                 res.append(groups[trans[choice]][2])
             else:
                 res.append('cant resolve job title')
-                res.append('')
+                res.append(row[4].value + "+" + row[5].value + '+' + row[-6].value)
                 res.append('')
                 res.append('')
                 print(row[4].value, "+",row[5].value, '+',row[-6].value)
-        res.append(1 if row[-4].value == row[-5].value else 0)
+        if (row[-4].value == None) | (row[-5].value == None):
+            res.append(0)
+        else:
+            res.append(1 if int(row[-4].value) <= int(row[-5].value) else 0)
         ws.append(res)
-    wb.save('clean_feb1.xlsx')
+    wb.save(path_to_data + 'clean_slow.xlsx')
 
 calc()

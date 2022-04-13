@@ -59,15 +59,15 @@ def calc():
         res.append(row[4].value)
         res.append(row[5].value)
         res.append(row[-11].value)
-        res.append(row[-8].value)
+        res.append(row[10].value)
         res.append(1 if row[-9].value == 'Основное место работы' and row[-7].value ==  'Работа' else 0)
-        if  not row[-6].value:
+        if  not row[8].value:
             res.append('no job value')
             res.append('')
             res.append('')
             res.append('')
         else:
-            choice = process.extractOne(row[-6].value, look_up, scorer=fuzz.WRatio)[0]
+            choice = process.extractOne(row[8].value, look_up, scorer=fuzz.WRatio)[0]
             if choice in trans:
                 res.append(trans[choice])
                 res.append(groups[trans[choice]][0])

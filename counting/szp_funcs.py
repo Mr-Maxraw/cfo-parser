@@ -130,6 +130,13 @@ def sum_fot(row, months):
             sum += row['sum_' + month]
     return sum
 
+def sum_fot_jobs(row, months, jobs):
+    sum = 0
+    for month in months:
+        if pd.isna(row['sum_' + month]) == False and pd.isna(row['job_' + month]) == False and row['job_' + month] in jobs:
+            sum += row['sum_' + month]
+    return sum
+
 def load_groups(file):
     df = pd.read_excel(path_to_docs + file + '.xlsx', sheet_name='УГД')
     ped = df[df['Педагогический'] == 1]['Должность'].tolist()

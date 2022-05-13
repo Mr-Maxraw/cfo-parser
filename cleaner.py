@@ -3,7 +3,7 @@ from fuzzywuzzy import process, fuzz
 import time
 
 path_to_docs = 'C:/Users/PetukhovMD/Desktop/справочники/'
-path_to_data = 'C:/Users/PetukhovMD/Desktop/2022/март/'
+path_to_data = 'C:/Users/PetukhovMD/Desktop/2022/апрель/'
 
 wb = load_workbook(path_to_docs + 'input.xlsx')
 groups = {}

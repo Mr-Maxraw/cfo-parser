@@ -31,7 +31,7 @@ def load_data(file):
     sample = df[(df.type == 'Основное место работы') | (df.type == 'Внутреннее совместительство')]
     sums = sample.iloc[:, [0,1,2,3]].groupby(['inn', 'snils']).sum().reset_index().groupby('snils').max().reset_index()
     sums = pd.merge(sums, sample[sample.type == 'Основное место работы'], how='left', on=['inn', 'snils'])
-    sums = sums[(sums.stv >= 1.0) & (sums.status == 'Работа') & (sums.day == 1)]
+    sums = sums[(sums.stv >= 1.0) & (sums.status == 'Работа') & (sums.day == 1) & (sums.status_pref == 'Работа')]
     sums = sums[['inn', 'snils', 'sum_x', 'stv', 'job']].drop_duplicates(['inn', 'snils', 'sum_x'])
     sums = sums.rename(columns = {'inn_y': 'inn', 'sum_x': 'sum_' + file, 'job':'job_' + file, 'stv': 'stv_' + file})
     return sums
@@ -51,8 +51,8 @@ def load_data_all(file):
     sample = df[~(df.type == 'Внешнее совместительство')]
     sums = sample.iloc[:, [0,1,2,3]].groupby(['inn', 'snils']).sum().reset_index().groupby('snils').max().reset_index()
     sums = pd.merge(sums, sample[sample.type == 'Основное место работы'], how='left', on=['inn', 'snils'])
-    sums = sums[['inn', 'snils', 'sum_x', 'stv', 'job']].drop_duplicates(['inn', 'snils', 'sum_x'])
-    sums = sums.rename(columns = {'inn': 'inn', 'sum_x': 'sum_' + file, 'job':'job_' + file, 'stv': 'stv_' + file})
+    sums = sums[['inn', 'snils', 'sum_x', 'stv', 'job', 'status']].drop_duplicates(['inn', 'snils', 'sum_x'])
+    sums = sums.rename(columns = {'inn': 'inn', 'sum_x': 'sum_' + file, 'job':'job_' + file, 'stv': 'stv_' + file, 'status': 'status_' + file})
     return sums
 
 

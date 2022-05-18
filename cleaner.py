@@ -67,7 +67,7 @@ def calc():
             res.append('')
             res.append('')
         else:
-            choice = process.extractOne(row[8].value, look_up, scorer=fuzz.WRatio)[0]
+            choice = row[8].value#process.extractOne(row[8].value, look_up, scorer=fuzz.WRatio)[0]
             if choice in trans:
                 res.append(trans[choice])
                 res.append(groups[trans[choice]][0])
@@ -75,10 +75,10 @@ def calc():
                 res.append(groups[trans[choice]][2])
             else:
                 res.append('cant resolve job title')
-                res.append(row[4].value + "+" + row[5].value + '+' + row[-6].value)
+                res.append(row[4].value + "+" + row[5].value + '+' + str(row[-6].value))
                 res.append('')
                 res.append('')
-                print(row[4].value, "+",row[5].value, '+',row[-6].value)
+                print(row[4].value, "+",row[5].value, '+',str(row[-6].value))
         if (row[-4].value == None) | (row[-5].value == None):
             res.append(0)
         else:

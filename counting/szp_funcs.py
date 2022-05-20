@@ -10,7 +10,7 @@ gku_inn = [7702061938, 7725618950, 7725539709, 9718071371, 7726317748, 770419115
 
 def get_otv():
     otv = pd.read_excel(path_to_docs + 'Ответственные.xlsx').rename(columns={'инн орг': 'inn', 'округ': 'okr', 'Зарпл. Обслуживание': 'otv', 'Наименование': 'sch_name'})
-    otv = otv[['inn', 'okr', 'otv', 'sch_name']]
+    otv = otv[['inn', 'okr', 'otv', 'sch_name', 'ekis']]
     return otv
 
 def get_fio():

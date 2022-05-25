@@ -112,6 +112,8 @@ def szp_teach(row, months):
         return np.nan
     return sum_szp / cnt
 
+vosp = ['Старший воспитатель', 'Воспитатель']
+
 def szp_vosp(row, months):
     sum_szp = 0
     cnt = 0

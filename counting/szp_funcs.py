@@ -27,6 +27,43 @@ def to_double(row, f_name):
         return 0.0
     return float(t[0]+'.'+t[1])
 
+def load_month(file):
+    df = pd.read_excel(path_to_data + file + '.xlsx')
+    df['stv'] = df.apply(lambda row: to_double(row, 'stv'), axis=1)
+    df = df[df.type.isin(day_types[:2])]
+    sums = df[['inn', 'snils', 'sum']].groupby(['inn', 'snils']).sum()
+    sums = pd.merge(sums.reset_index(), df[(df.status != 'Увольнение')], how='left', on=['inn', 'snils']).drop(columns='sum_y').rename(columns={'sum_x': 'sum'})
+    sums = sums[sums.type == day_types[0]]
+    sums.columns = ['inn', 'snils'] + [file + '_' + i for i in sums.columns][2:]
+    return sums
+
+def load_month_by_type(file, type):
+    df = pd.read_excel(path_to_data + file + '.xlsx')
+    df['stv'] = df.apply(lambda row: to_double(row, 'stv'), axis=1)
+    df = df[df.type == day_types[type]]
+    sums = df[['inn', 'snils', 'sum']].groupby(['inn', 'snils']).sum()
+    sums = pd.merge(sums.reset_index(), df[(df.status != 'Увольнение')], how='left', on=['inn', 'snils']).drop(columns='sum_y').rename(columns={'sum_x': 'sum'})
+    sums = sums[sums.type == day_types[type]]
+    sums.columns = ['inn', 'snils'] + [file + '_' + i for i in sums.columns][2:]
+    return sums
+
+def custom_create_res(months, func, type = -1):
+    if type == -1:
+        res = 0
+        for i in range(len(months)):
+            if i == 0:
+                res = func(months[i])
+            else:
+                res = pd.merge(res, func(months[i]), how='outer', on=['inn', 'snils'])
+        return res
+    res = 0
+    for i in range(len(months)):
+        if i == 0:
+            res = func(months[i], type)
+        else:
+            res = pd.merge(res, func(months[i], type), how='outer', on=['inn', 'snils'])
+    return res
+
 def load_data(file):
     df = pd.read_excel(path_to_data + file + '.xlsx')
     df.stv = df.apply(lambda row: to_double(row, 'stv'), axis=1)

@@ -34,7 +34,7 @@ def load_month(file):
     sums = df[['inn', 'snils', 'sum']].groupby(['inn', 'snils']).sum()
     sums = pd.merge(sums.reset_index(), df[(df.status != 'Увольнение')], how='left', on=['inn', 'snils']).drop(columns='sum_y').rename(columns={'sum_x': 'sum'})
     sums = sums[sums.type == day_types[0]]
-    sums.columns = ['inn', 'snils'] + [file + '_' + i for i in sums.columns][2:]
+    sums.columns = ['inn', 'snils'] + [i + '_' + file for i in sums.columns][2:]
     return sums
 
 def load_month_by_type(file, type):
@@ -44,7 +44,7 @@ def load_month_by_type(file, type):
     sums = df[['inn', 'snils', 'sum']].groupby(['inn', 'snils']).sum()
     sums = pd.merge(sums.reset_index(), df[(df.status != 'Увольнение')], how='left', on=['inn', 'snils']).drop(columns='sum_y').rename(columns={'sum_x': 'sum'})
     sums = sums[sums.type == day_types[type]]
-    sums.columns = ['inn', 'snils'] + [file + '_' + i for i in sums.columns][2:]
+    sums.columns = ['inn', 'snils'] + [i + '_' + file for i in sums.columns][2:]
     return sums
 
 def custom_create_res(months, func, type = -1):

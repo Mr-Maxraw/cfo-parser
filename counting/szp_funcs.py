@@ -9,6 +9,7 @@ gku = ["ГБУ МГДУ","ГАОУ ДПО ЦПМ","ГАОУ ДПО МЦКО","Г
 gku_inn = [7702061938, 7725618950, 7725539709, 9718071371, 7726317748, 7704191153, 9705101759, 7719210793, 7705399348, 7705020295, 7714239823, 7727190237, 7718924940, 7707329480]
 vosp = ['Старший воспитатель', 'Воспитатель']
 day_types = ['Основное место работы', 'Внутреннее совместительство', 'Внешнее совместительство']
+months_year = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sem', 'oct', 'nov', 'dec']
 
 def get_otv():
     otv = pd.read_excel(path_to_docs + 'Ответственные.xlsx').rename(columns={'инн орг': 'inn', 'округ': 'okr', 'Зарпл. Обслуживание': 'otv', 'Наименование': 'sch_name'})
@@ -26,6 +27,45 @@ def to_double(row, f_name):
     if t[0] == 'nan':
         return 0.0
     return float(t[0]+'.'+t[1])
+
+def re_szp(row, months):
+    active_months = 0
+    fot = 0
+    for month in months:
+        if row['day_' + month] == 1 and row['stv_' + month] >= 1 and row['status_' + month] == row['status_pref_' + month] and row['status_' + month] == 'Работа':
+            fot += row['sum_' + month]
+            active_months += 1
+    if active_months == 0:
+        return np.nan
+    return fot / active_months
+
+def re_szp_job(row, months, jobs):
+    active_months = 0
+    fot = 0
+    for month in months:
+        if row['job_' + month] in jobs and row['day_' + month] == 1 and row['stv_' + month] >= 1 and row['status_' + month] == row['status_pref_' + month] and row['status_' + month] == 'Работа':
+            fot += row['sum_' + month]
+            active_months += 1
+    if active_months == 0:
+        return np.nan
+    return fot / active_months
+
+def re_fot(row, months):
+    fot = 0
+    for month in months:
+        fot += row['sum_' + month]
+    if fot == 0:
+        return np.nan
+    return fot
+
+def re_fot_job(row, months, jobs):
+    fot = 0
+    for month in months:
+        if row['job_' + month] in jobs:
+            fot += row['sum_' + month]
+    if fot == 0:
+        return np.nan
+    return fot
 
 def load_month(file, path_to_data = path_to_data):
     df = pd.read_excel(path_to_data + file + '.xlsx')

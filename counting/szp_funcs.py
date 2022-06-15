@@ -53,7 +53,8 @@ def re_szp_job(row, months, jobs):
 def re_fot(row, months):
     fot = 0
     for month in months:
-        fot += row['sum_' + month]
+        if pd.isna(row['sum_' + month]) == False:
+            fot += row['sum_' + month]
     if fot == 0:
         return np.nan
     return fot
@@ -61,7 +62,7 @@ def re_fot(row, months):
 def re_fot_job(row, months, jobs):
     fot = 0
     for month in months:
-        if row['job_' + month] in jobs:
+        if row['job_' + month] in jobs and pd.isna(row['sum_' + month]) == False:
             fot += row['sum_' + month]
     if fot == 0:
         return np.nan

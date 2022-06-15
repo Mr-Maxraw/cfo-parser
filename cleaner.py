@@ -3,7 +3,7 @@ from fuzzywuzzy import process, fuzz
 import time
 
 path_to_docs = 'C:/Users/PetukhovMD/Desktop/справочники/'
-path_to_data = 'C:/Users/PetukhovMD/Desktop/2022/апрель/'
+path_to_data = 'C:/Users/PetukhovMD/Desktop/2022/old май/'
 
 wb = load_workbook(path_to_docs + 'input.xlsx')
 groups = {}
@@ -67,7 +67,7 @@ def calc():
             res.append('')
             res.append('')
         else:
-            choice = row[8].value#process.extractOne(row[8].value, look_up, scorer=fuzz.WRatio)[0]
+            choice = process.extractOne(row[8].value, look_up, scorer=fuzz.WRatio)[0]
             if choice in trans:
                 res.append(trans[choice])
                 res.append(groups[trans[choice]][0])

@@ -9,7 +9,8 @@ gku = ["ГБУ МГДУ","ГАОУ ДПО ЦПМ","ГАОУ ДПО МЦКО","Г
 gku_inn = [7702061938, 7725618950, 7725539709, 9718071371, 7726317748, 7704191153, 9705101759, 7719210793, 7705399348, 7705020295, 7714239823, 7727190237, 7718924940, 7707329480]
 vosp = ['Старший воспитатель', 'Воспитатель']
 day_types = ['Основное место работы', 'Внутреннее совместительство', 'Внешнее совместительство']
-months_year = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sem', 'oct', 'nov', 'dec']
+months_year = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+months_year_rus = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
 
 def get_otv():
     otv = pd.read_excel(path_to_docs + 'Ответственные.xlsx').rename(columns={'инн орг': 'inn', 'округ': 'okr', 'Зарпл. Обслуживание': 'otv', 'Наименование': 'sch_name'})
@@ -68,6 +69,15 @@ def re_fot_job(row, months, jobs):
         return np.nan
     return fot
 
+def accum_fot_job(row, months, jobs):
+    fot = 0
+    for month in months:
+        if row['job'] in jobs and pd.isna(row['sum_' + month]) == False:
+            fot += row['sum_' + month]
+    if fot == 0:
+        return np.nan
+    return fot
+
 def load_month(file, path_to_data = path_to_data):
     df = pd.read_excel(path_to_data + file + '.xlsx')
     df['stv'] = df.apply(lambda row: to_double(row, 'stv'), axis=1)
@@ -88,6 +98,13 @@ def load_month_all(file, path_to_data = path_to_data):
     sums.columns = ['inn', 'snils'] + [i + '_' + file for i in sums.columns][2:]
     return sums
 
+def load_month_sum_by_job(file, path_to_data= path_to_data):
+    df = pd.read_excel(path_to_data + file + '.xlsx')
+    df['stv'] = df.apply(lambda row: to_double(row, 'stv'), axis=1)
+    df.rename(columns={'sum': 'sum_' + file}, inplace=True)
+    df = df[['inn', 'snils', 'type', 'job', 'sum_' + file]].groupby(['inn', 'snils', 'type', 'job']).sum().reset_index()
+    return df
+
 def load_month_by_type(file, type, path_to_data = path_to_data):
     df = pd.read_excel(path_to_data + file + '.xlsx')
     df['stv'] = df.apply(lambda row: to_double(row, 'stv'), axis=1)
@@ -98,21 +115,21 @@ def load_month_by_type(file, type, path_to_data = path_to_data):
     sums.columns = ['inn', 'snils'] + [i + '_' + file for i in sums.columns][2:]
     return sums
 
-def custom_create_res(months, func, type = -1, data = path_to_data):
+def custom_create_res(months, func, type = -1, data = path_to_data, on=['inn', 'snils']):
     if type == -1:
         res = 0
         for i in range(len(months)):
             if i == 0:
                 res = func(months[i], path_to_data = data)
             else:
-                res = pd.merge(res, func(months[i], path_to_data = data), how='outer', on=['inn', 'snils'])
+                res = pd.merge(res, func(months[i], path_to_data = data), how='outer', on=on)
         return res
     res = 0
     for i in range(len(months)):
         if i == 0:
             res = func(months[i], type, path_to_data = data)
         else:
-            res = pd.merge(res, func(months[i], type, path_to_data = data), how='outer', on=['inn', 'snils'])
+            res = pd.merge(res, func(months[i], type, path_to_data = data), how='outer', on=on)
     return res
 
 def load_data(file):
@@ -227,7 +244,7 @@ def sum_fot_jobs(row, months, jobs):
             sum += row['sum_' + month]
     return sum
 
-def load_groups(file):
+def load_groups(file = 'input'):
     df = pd.read_excel(path_to_docs + file + '.xlsx', sheet_name='УГД')
     ped = df[df['Педагогический'] == 1]['Должность'].tolist()
     isp = df[df['Работники непосредственно осуществляющие и обеспечивающие основной учебно-вспомогательный процесс во взаимодействии с детьми'] == 1]['Должность'].tolist()

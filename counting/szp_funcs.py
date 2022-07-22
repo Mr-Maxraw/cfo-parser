@@ -2,15 +2,25 @@ import pandas as pd
 import numpy as np
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows as df_to_row
+from fuzzywuzzy import process, fuzz
 
 path_to_docs = 'C:/Users/PetukhovMD/Desktop/справочники/'
 path_to_data = 'C:/Users/PetukhovMD/Desktop/szp_2022/'
 gku = ["ГБУ МГДУ","ГАОУ ДПО ЦПМ","ГАОУ ДПО МЦКО","ГКУ ЦФО ДОНМ","ГБУ ГППЦ ДОНМ","ГКУ СФК ДОНМ","ГКУ Дирекция ДОНМ","ГБОУ ДПО МЦПС","ГБОУ ГМЦ ДОНМ","ГКУ Дирекция по строительству и реконструкции ДОНМ","ГАОУ ДПО ""Корпоративный университет""","ГАУ ""Центр цифровизации образования""","ГАУ Медиацентр","ГАОУ ДПО МЦРПО"]
-gku_inn = [7702061938, 7725618950, 7725539709, 9718071371, 7726317748, 7704191153, 9705101759, 7719210793, 7705399348, 7705020295, 7714239823, 7727190237, 7718924940, 7707329480]
+gku_inn = [7702061938, 7725618950, 7725539709, 9718071371, 7726317748, 7704191153, 9705101759, 7719210793, 7705399348, 7705020295, 7714239823, 7727190237, 7718924940, 7707329480, 	7725663400]
 vosp = ['Старший воспитатель', 'Воспитатель']
 day_types = ['Основное место работы', 'Внутреннее совместительство', 'Внешнее совместительство']
 months_year = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 months_year_rus = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+bad_satus = [np.nan, 'Увольнение', 'Отпуск по уходу за ребенком', 'Отпуск по беременности и родам']
+
+def matcher(row, look_up, name):
+    if pd.isna(row[name]):
+        return np.nan
+    ans = process.extractOne(row[name], look_up, scorer=fuzz.WRatio, score_cutoff=60)
+    if ans:
+        return ans[0]
+    return ans
 
 def get_otv():
     otv = pd.read_excel(path_to_docs + 'Ответственные.xlsx').rename(columns={'инн орг': 'inn', 'округ': 'okr', 'Зарпл. Обслуживание': 'otv', 'Наименование': 'sch_name'})
@@ -27,6 +37,8 @@ def to_double(row, f_name):
     t = str(row[f_name]).split(',')
     if t[0] == 'nan':
         return 0.0
+    if len(t) == 1:
+        return float(t[0])
     return float(t[0]+'.'+t[1])
 
 def re_szp(row, months):
@@ -54,8 +66,8 @@ def re_szp_job(row, months, jobs):
 def re_fot(row, months):
     fot = 0
     for month in months:
-        if pd.isna(row['sum_' + month]) == False:
-            fot += row['sum_' + month]
+        if pd.isna(row['sum_all_' + month]) == False:
+            fot += row['sum_all_' + month]
     if fot == 0:
         return np.nan
     return fot
@@ -63,8 +75,8 @@ def re_fot(row, months):
 def re_fot_job(row, months, jobs):
     fot = 0
     for month in months:
-        if row['job_' + month] in jobs and pd.isna(row['sum_' + month]) == False:
-            fot += row['sum_' + month]
+        if row['job_' + month] in jobs and pd.isna(row['sum_all_' + month]) == False:
+            fot += row['sum_all_' + month]
     if fot == 0:
         return np.nan
     return fot
@@ -72,8 +84,8 @@ def re_fot_job(row, months, jobs):
 def accum_fot_job(row, months, jobs):
     fot = 0
     for month in months:
-        if row['job'] in jobs and pd.isna(row['sum_' + month]) == False:
-            fot += row['sum_' + month]
+        if row['job'] in jobs and pd.isna(row['sum_all_' + month]) == False:
+            fot += row['sum_all_' + month]
     if fot == 0:
         return np.nan
     return fot
@@ -82,8 +94,8 @@ def load_month(file, path_to_data = path_to_data):
     df = pd.read_excel(path_to_data + file + '.xlsx')
     df['stv'] = df.apply(lambda row: to_double(row, 'stv'), axis=1)
     df = df[df.type.isin(day_types[:2])]
-    sums = df[['inn', 'snils', 'sum']].groupby(['inn', 'snils']).sum()
-    sums = pd.merge(sums.reset_index(), df[(df.status != 'Увольнение')], how='left', on=['inn', 'snils']).drop(columns='sum_y').rename(columns={'sum_x': 'sum'})
+    sums = df[['inn', 'snils', 'sum', 'sum_all']].groupby(['inn', 'snils']).sum()
+    sums = pd.merge(sums.reset_index(), df[(df.status != 'Увольнение')], how='left', on=['inn', 'snils']).drop(columns=['sum_y', 'sum_all_y']).rename(columns={'sum_x': 'sum', 'sum_all_x': 'sum_all'})
     sums = sums[sums.type == day_types[0]]
     sums.columns = ['inn', 'snils'] + [i + '_' + file for i in sums.columns][2:]
     return sums
@@ -92,8 +104,8 @@ def load_month_all(file, path_to_data = path_to_data):
     df = pd.read_excel(path_to_data + file + '.xlsx')
     df['stv'] = df.apply(lambda row: to_double(row, 'stv'), axis=1)
     df = df[df.type.isin(day_types)]
-    sums = df[['inn', 'snils', 'sum']].groupby(['inn', 'snils']).sum()
-    sums = pd.merge(sums.reset_index(), df, how='left', on=['inn', 'snils']).drop(columns='sum_y').rename(columns={'sum_x': 'sum'})
+    sums = df[['inn', 'snils', 'sum', 'sum_all']].groupby(['inn', 'snils']).sum()
+    sums = pd.merge(sums.reset_index(), df, how='left', on=['inn', 'snils']).drop(columns=['sum_y', 'sum_all_y']).rename(columns={'sum_x': 'sum', 'sum_all_x': 'sum_all'})
     sums = sums[(sums.type == day_types[0]) | (sums.type == day_types[2])]
     sums.columns = ['inn', 'snils'] + [i + '_' + file for i in sums.columns][2:]
     return sums
@@ -101,15 +113,15 @@ def load_month_all(file, path_to_data = path_to_data):
 def load_month_sum_by_job(file, path_to_data= path_to_data):
     df = pd.read_excel(path_to_data + file + '.xlsx')
     df['stv'] = df.apply(lambda row: to_double(row, 'stv'), axis=1)
-    df.rename(columns={'sum': 'sum_' + file}, inplace=True)
-    df = df[['inn', 'snils', 'type', 'job', 'sum_' + file]].groupby(['inn', 'snils', 'type', 'job']).sum().reset_index()
+    df.rename(columns={'sum': 'sum_' + file, 'sum_all': 'sum_all_' + file}, inplace=True)
+    df = df[['inn', 'snils', 'type', 'job', 'sum_all_' + file]].groupby(['inn', 'snils', 'type', 'job']).sum().reset_index()
     return df
 
 def load_month_by_type(file, type, path_to_data = path_to_data):
     df = pd.read_excel(path_to_data + file + '.xlsx')
     df['stv'] = df.apply(lambda row: to_double(row, 'stv'), axis=1)
     df = df[df.type == day_types[type]]
-    sums = df[['inn', 'snils', 'sum']].groupby(['inn', 'snils']).sum()
+    sums = df[['inn', 'snils', 'sum', 'sum_all']].groupby(['inn', 'snils']).sum()
     sums = pd.merge(sums.reset_index(), df[(df.status != 'Увольнение')], how='left', on=['inn', 'snils']).drop(columns='sum_y').rename(columns={'sum_x': 'sum'})
     sums = sums[sums.type == day_types[type]]
     sums.columns = ['inn', 'snils'] + [i + '_' + file for i in sums.columns][2:]
@@ -176,7 +188,7 @@ def create_full_res(months):
 def print_df(df, name):
     wb = Workbook()
     ws = wb.active
-    for  i in df_to_row(df, header=True):
+    for  i in df_to_row(df, header=True, index=False):
         ws.append(i)
     wb.save(name + '.xlsx')
 
@@ -250,3 +262,11 @@ def load_groups(file = 'input'):
     isp = df[df['Работники непосредственно осуществляющие и обеспечивающие основной учебно-вспомогательный процесс во взаимодействии с детьми'] == 1]['Должность'].tolist()
     aup = df[df['УГД'] == 'Административно-управленческий персонал']['Должность'].to_list()
     return ped, isp, aup
+
+def load_pay_types(file = 'pay_type'):
+    return pd.read_excel(path_to_docs + file + '.xlsx', sheet_name='Все').rename(columns={'Вид ': 'type', 'Наименование ': 'name'})[['type', 'name']]
+
+def load_jobs(file = 'input'):
+    jobs = pd.read_excel(path_to_docs + file + '.xlsx', sheet_name='должности')
+    jobs.columns = ['pre_job', 'job_106']
+    return jobs

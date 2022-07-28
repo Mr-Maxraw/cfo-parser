@@ -22,6 +22,14 @@ def matcher(row, look_up, name):
         return ans[0]
     return ans
 
+def get_nouvp_grps(file = 'input'):
+    big = pd.read_excel(path_to_docs + file + '.xlsx', sheet_name='isp')
+    oo = big['oo'].to_list()
+    udo = big['udo'].to_list()
+    spo = big['spo'].to_list()
+    vpo = big['vpo'].to_list()
+    return {'ОО': oo, 'ДОУ': oo, 'ЦГУ': udo, 'УДО': udo, 'СПО': spo, 'ВУЗ': vpo}
+
 def get_otv():
     otv = pd.read_excel(path_to_docs + 'Ответственные.xlsx').rename(columns={'инн орг': 'inn', 'округ': 'okr', 'Зарпл. Обслуживание': 'otv', 'Наименование': 'sch_name'})
     otv = otv[['inn', 'okr', 'otv', 'sch_name', 'ekis']]
@@ -83,6 +91,20 @@ def re_fot_job(row, months, jobs):
 
 def accum_fot_job(row, months, jobs):
     fot = 0
+    for month in months:
+        if row['job'] in jobs and pd.isna(row['sum_all_' + month]) == False:
+            fot += row['sum_all_' + month]
+    if fot == 0:
+        return np.nan
+    return fot
+
+def accum_fot_nouvp(row, months, grouped_jobs):
+    fot = 0
+    if pd.isna(row['sch_type']):
+        return np.nan
+    if row['sch_type'] not in grouped_jobs:
+        return np.nan
+    jobs = grouped_jobs[row['sch_type']]
     for month in months:
         if row['job'] in jobs and pd.isna(row['sum_all_' + month]) == False:
             fot += row['sum_all_' + month]
@@ -270,3 +292,6 @@ def load_jobs(file = 'input'):
     jobs = pd.read_excel(path_to_docs + file + '.xlsx', sheet_name='должности')
     jobs.columns = ['pre_job', 'job_106']
     return jobs
+
+def load_sch_types(file = 'school_types'):
+    return pd.read_excel(path_to_docs + file + '.xlsx')

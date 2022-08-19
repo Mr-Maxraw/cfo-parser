@@ -4,8 +4,8 @@ from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows as df_to_row
 from fuzzywuzzy import process, fuzz
 
-path_to_docs = 'C:/Users/PetukhovMD/Desktop/справочники/'
-path_to_data = 'C:/Users/PetukhovMD/Desktop/szp_2022/'
+path_to_docs = 'C:/Users/posochovais/Desktop/Python/справочники/'
+path_to_data = 'C:/Users/posochovais/Desktop/Python/отработанные выгрузки 2022/'
 gku = ["ГБУ МГДУ","ГАОУ ДПО ЦПМ","ГАОУ ДПО МЦКО","ГКУ ЦФО ДОНМ","ГБУ ГППЦ ДОНМ","ГКУ СФК ДОНМ","ГКУ Дирекция ДОНМ","ГБОУ ДПО МЦПС","ГБОУ ГМЦ ДОНМ","ГКУ Дирекция по строительству и реконструкции ДОНМ","ГАОУ ДПО ""Корпоративный университет""","ГАУ ""Центр цифровизации образования""","ГАУ Медиацентр","ГАОУ ДПО МЦРПО"]
 gku_inn = [7702061938, 7725618950, 7725539709, 9718071371, 7726317748, 7704191153, 9705101759, 7719210793, 7705399348, 7705020295, 7714239823, 7727190237, 7718924940, 7707329480, 	7725663400]
 vosp = ['Старший воспитатель', 'Воспитатель']
